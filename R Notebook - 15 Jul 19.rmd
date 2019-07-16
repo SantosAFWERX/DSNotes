@@ -1,0 +1,119 @@
+---
+title: "R Notebook - 15 JUL 19"
+output:
+  html_document:
+    df_print: paged
+---
+
+----------------------------------------------------------------
+
+## 1. VECTORS
+```{r}
+#create a vector named varx containing 1-4
+varx = c(1,2,3,4)
+#create a vector named varx containing 1-2
+varx[1:2]
+#determine whether varx is a character
+is.character(varx)
+#create a sequence from 0 to 15 that counts by 5
+seq(0,15,5)
+#create a vector of names associated to each element within the vector. Then confirm. 
+names(varx) = c("first","second","third","fourth")
+varx
+#create a vector using different data types
+varx = c(1,"two",TRUE,NULL)
+```
+----------------------------------------------------------------
+
+## 2. MATRICES 
+
+```{r}
+#create a 3x3 matrix 
+matrix1 = matrix(nrow=3,ncol=3)
+#determine the length of said matrix 
+length(matrix1)
+
+#create a matrix of 9 elements
+matrix2 = 1:9 #this creates a vector of 9 elements
+dim(matrix2) = c(3,3) #this makes the vector into a 3x3 matrix. elements must match. 
+matrix2 #confirm
+
+#create a matrix of 9 elements, 3x3 dimensions, by row (instead of columns)
+matrix3 = matrix(1:9, nrow=3, ncol=3, byrow=TRUE) #numbers now increase going right, not going down
+matrix3 #confirm
+class(matrix3) #determine the class of matrix
+typeof(matrix3) #determine the type of matrix
+attributes(matrix3) #determine the attributes of the matrix
+
+matrix4 = cbind(matrix3, varx) #bind varx (vector) as a column to matrix; appending 
+matrix4
+matrix4[,4] #view fourth column in matrix (should be varx)
+matrix5 = matrix3*5 
+matrix5
+
+colnames(matrix3)=c("col1","col2","col3") #name columns 
+matrix3
+rownames(matrix3)=c("row1","row2","row3") #name rows
+```
+----------------------------------------------------------------
+
+## 3. LISTS
+Like a vector, but lists can contain other lists within their elements (infinitely) and support all data types
+
+```{r}
+
+list1 = list(One = 1,Two = "am",Three = TRUE) #list of three items
+list1
+attributes(list1)
+
+list2 = list(1,2,3) # also list of three items 
+names(list2) = c("one","two","three") #same as above
+list2
+attributes(list2)
+
+str(list2) #in R, STR means structure, not string
+
+list1[1] #name and value
+list1[[1]] #just value
+```
+----------------------------------------------------------------
+
+## 4.  DATA FRAMES
+Like a matrix, but supports all data types
+
+```{r}
+
+
+# df = data.frame(column1=1:5, column2=6:10)
+df = data.frame(1:5, 6:10)
+colnames(df) = c("col1","col2") #names columns of dataframe
+df
+
+sample.df1 = as.data.frame(matrix3) #converts matrix to dataframe
+sample.df1
+
+attributes(sample.df1)
+
+sample.df1$col1 #displays column, dollarsign only works with columns
+sample.df1$col1[1] #get coordinate value
+
+sample.df1[1,] #row =, call by coordinate
+sample.df1[,1] #column 
+
+sample.df1[,"col1"] #column, call by name
+sample.df1["row1",] #row
+
+#add new column
+sample.df1$col4 = 1:3 #created and named new column, name is $(col4), =(1:3) is value within col
+sample.df1
+
+str(sample.df1)
+
+### factors are variables containing categorical data (names); each name is its own "level"
+
+## to delete a column, assign it to NULL. sample.df1$col1=NULL delets col1. then check with sample.df1
+
+## Review: Go back and look at dates. 
+
+```
+

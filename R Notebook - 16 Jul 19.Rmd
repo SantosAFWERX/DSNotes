@@ -1,0 +1,264 @@
+---
+title: "Intro to R"
+output: html_notebook
+---
+
+## Setup for R Notebooks 
+```{r setup, include=FALSE, echo=FALSE}
+require("knitr")
+opts_knit$set(root.dir="~/Desktop/af-werx/data") 
+
+```
+
+## Setting the Directory 
+```{r}
+setwd("~/Desktop/af-werx")
+```
+
+
+## Setting Working Directory 
+```{r}
+getwd()
+```
+
+## Set Our Directories
+```{r}
+main_dir = "~/Desktop/af-werx"
+data_dir = paste0(main_dir, "/data")
+data_dir
+plot_dir = paste0(main_dir, "/plots")
+plot_dir
+setwd(data_dir)
+getwd()
+```
+```{r}
+temp_heart_rate = read.csv("temp_heart_rate.csv", header = T, stringsAsFactors = F)
+```
+
+## Structure of the Data
+```{r}
+str(temp_heart_rate)
+```
+
+## View First Row of Data 
+```{r}
+head(temp_heart_rate)
+```
+
+## View Last Rows of Data
+```{r}
+tail(temp_heart_rate)
+```
+
+## View the Whole Data Set
+(Opens a new window)
+```{r}
+View(temp_heart_rate) #must be uppercase
+```
+
+## Create a Subset from Data (Writing Data)
+```{r}
+temp_heart_subset = temp_heart_rate[1:10,] #dont forget comma
+write.csv(temp_heart_subset, "temp_heart_subset.csv", row.names = F)
+```
+
+## View (list) Objects in the Environment
+```{r}
+ls()
+```
+
+## Save Environment 
+```{r}
+save.image(file = "myenv.RData")
+```
+
+## Remove Variable
+```{r}
+rm("temp_heart_rate")
+ls()
+```
+
+## Remove Whole Environment 
+```{r}
+rm(list=ls()) #everything is gone, variables, and directories 
+```
+
+## Load the Environment
+```{r}
+load("myenv.RData")
+```
+
+
+# Work Example - CMP Dataset
+```{r}
+CMP = read.csv("ChemicalManufacturingProcess.csv", header = T, stringsAsFactors = F)
+str(CMP)
+```
+
+## View CMP Data
+```{r}
+View(CMP)
+```
+
+## Create a Subset of Data
+```{r}
+col_ids = c(1:4, 14:16)
+col_ids
+
+CMPsubset = CMP[,col_ids]
+str(CMPsubset)
+
+```
+
+
+## Obtain Summary of Subset
+```{r}
+summary(CMPsubset)
+```
+
+
+## Manually Obtain Max Value of Column (Attribute)
+```{r}
+# Example with error
+# maxprocess01 = max(CMPsubset$ManufacturingProcess01)
+# maxprocess01 ##get NA because there is an NA within the data. Thus, cannot get max
+
+#Fix
+maxprocess01 = max(CMPsubset$ManufacturingProcess01, na.rm = T) #ignores NAs, does not remove NAs
+maxprocess01 
+
+```
+
+## Identifying NAs within Columns (Attributes)
+```{r}
+is_na = is.na(CMPsubset$ManufacturingProcess01) #first value is NA, all else are good; dont need variable but makes it easier to ID with the which command
+
+which(is_na) #easy shortcut
+# equivalent to which(is.na(CMPsubset$ManufacturingProcess01))
+
+CMPsubset$ManufacturingProcess01[is_na] #finds the NA! COOL
+
+```
+
+## Manually Obtain the Mean of a Column (Attribute)
+```{r}
+mean_process01 = mean(CMPsubset$ManufacturingProcess01, na.rm = T)
+mean_process01
+```
+
+## Replace NAs with the Mean
+```{r}
+CMPsubset$ManufacturingProcess01[is_na] = mean_process01
+# NA is being found, and set equal to Mean
+```
+
+## Recalculating the Max (with NAs replaced by Mean)
+```{r}
+maxprocess01 = max(CMPsubset$ManufacturingProcess01)
+maxprocess01
+```
+
+# Repeat Examples -  Manufacturing Process 02
+```{r}
+mean_process02 = mean(CMPsubset$ManufacturingProcess02, na.rm = T) #Find Mean
+mean_process02
+
+is_na = is.na(CMPsubset$ManufacturingProcess02) #Find NAs
+
+CMPsubset$ManufacturingProcess02[is_na] = mean_process02 #Replace NAs with Mean
+
+maxprocess02 = max(CMPsubset$ManufacturingProcess02) #ReRun Max
+maxprocess02
+```
+## Repeat Examples  - Manufacturing Process 03
+```{r}
+mean_process03 = mean(CMPsubset$ManufacturingProcess03, na.rm = T) 
+mean_process03
+
+is_na = is.na(CMPsubset$ManufacturingProcess03) 
+
+CMPsubset$ManufacturingProcess03[is_na] = mean_process03
+
+maxprocess03 = max(CMPsubset$ManufacturingProcess03)
+maxprocess03
+```
+
+# Control Structure (If Else Statements)
+
+## Obtain the Mean of Yield
+```{r}
+yield_mean = mean(CMP$Yield)
+yield_mean
+```
+
+## Create New Column (Conditioned to Abv Avg/Bel Avg Yield)
+```{r}
+#col created/named    take OG    compare mean   success          failure
+CMP$new_yield = ifelse(CMP$Yield >= yield_mean, "above_average", "below_average") #creating and naming a new column within master file, column is conditioned: if original yield is greater than or equal to yield mean, succes = above avg, fail = below avg
+head(CMP[,c("Yield","new_yield")]) #view head of results, vector of original yield and new yield 
+tail(CMP[,c("Yield","new_yield")]) #view tail of results, being the original yield and new yield
+write.csv(CMP[,c("Yield","new_yield")], "newyield.csv", row.names=F) #write results to new CSV file
+
+View(CMP)
+```
+
+## For Loops
+```{r}
+CMPsubset_variables = colnames(CMPsubset)
+
+start = 3
+end = 6
+
+for (i in start:end){
+  print(CMPsubset_variables[i])
+}
+
+```
+## Make a Function
+```{r}
+PrintHello = function(name){
+  hello = paste0("hello ", name)
+  print(hello)
+}
+
+PrintHello("AFWERX NEXUS")
+```
+## Make a Better Function
+```{r}
+GetPi = function(n=4){
+  pi = round(3.141592,n)
+  return(pi)
+}
+
+GetPi(5)
+```
+## Create a Function That Can Impute NAs with Mean
+```{r}
+ImputeNAsWithMean = function(dataset){
+  for(i in 1:ncol(dataset)){
+    is_na = is.na(dataset[,i])
+    if(any(is_na)){  ##will ring true if equals true, triggered by previous command which results in logical value (true or false)
+      na_ids = which(is_na) 
+      
+      var_mean = mean(dataset[,i], na.rm = T)
+      dataset[na_ids,i] = var_mean
+      message = paste0("Replacing NA with mean of: ", colnames(dataset)[i])
+      print(message)
+    }
+  }
+  return(dataset)
+}
+
+CMPsubset = CMP[,c(1:4, 14:16)]
+CMPsubset_imputed = ImputeNAsWithMean(CMPsubset)
+View(CMPsubset_imputed)
+
+```
+
+## Calling Functions
+```{r}
+source("ImputeNAsWithMean.R") #careful on where they are saved, should be in the same directory as the dataset unless specifically defined
+
+GetPi(3)
+ 
+```
