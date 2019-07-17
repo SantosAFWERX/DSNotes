@@ -1,0 +1,195 @@
+# View State.x77
+View(state.x77)
+
+
+class(state.x77) #its a matrix 
+str(state.x77)
+
+
+dim(state.x77) #get dim dims
+dim(state.x77)[1] # outputs number of rows 
+dim(state.x77)[2] # outputs number of columns
+
+# Getting Samples
+set.seed(1) #running the sample lines alone produces new results; if you want same results, run seed first every time
+sample(1:100, size=10)
+sample(state.name, size = 5)
+
+# Defining Functionals
+## For Loops and lapply
+out_list = list()
+ 
+for(i in 1:15){
+  out_list[i] = sqrt(i)
+}
+
+out_list # below line of code is the exact same thing as this
+
+#---
+
+out_list = lapply(1:5, sqrt) # samesies 
+out_list
+
+## Unique Functional -- removes repeated values
+
+state.region #auto loaded
+unique_regions = unique(state.region)
+unique_regions
+
+unique_regions_list = as.list(unique_regions) #convert to list, remember, not same as vector, values have "embedded titles"
+unique_regions_list
+
+as.character(unique_regions_list[[1]]) ##double brackets for characters (factors with levels), or else get level
+
+unique_regions_list = lapply(unique_regions_list, as.character) ##get as character not factor 
+unique_regions_list
+
+toupper(unique_regions_list[[1]]) ##convert to uppercase
+
+unique_regions_list = lapply(unique_regions_list, toupper) #convert to uppercase
+unique_regions_list
+
+#create a numeric list
+numeric_list = list(first=-1, second=2, third=3, fourth=-4)
+numeric_list_abs = lapply(numeric_list, abs) #suppose we want only positive numbers
+numeric_list_abs #we can apply the abs() function to the list to remove negatives
+
+# GSUB
+gsub(" ","_", unique_regions_list[[4]]) #first is replacement value, second is replacement, third is target
+
+#new list    universal change to reg list        custom function, replace spaces with underscore, target is the uppercase version of the target
+fancy_list = lapply(unique_regions_list, function(entry){gsub(" ","_",toupper(entry))})
+fancy_list
+
+# lets create a function with a name to use it with lapply 
+toUpperAndUnderscore = function(entry){
+  gsub(" ","_",toupper(entry))
+} # Boom, got a function that replaces spaces with underscores, and then applies it to the uppercase target
+
+toUpperAndUnderscore("north central") #test that it works (it does)
+
+fancy_list = lapply(unique_regions_list, toUpperAndUnderscore) #run an application loop where UAU is applied to URL
+fancy_list ##no "()" entry placeholder needed for UAU within lapply
+#lapply takes values one by one (application loop), so stick with lists and vectors
+
+# Generate a Random Sequence of Numbers
+sample_vec = sample(1:50, size = 50)
+sample_vec #got a random vector of 1-50
+
+state.name
+state.name[sample_vec] #shuffles deck of 50 state names
+
+if(sample_vec[5] %% 2 == 0){ ##checks if value is even; if remainder after dividing by 2 is 0
+  TRUE #then output true
+} else{
+  FALSE #otherwise output false
+}
+
+
+#lets create a function that returns TRUE if value is EVEN
+IsEven = function(n){
+  if(n %% 2 == 0){
+    TRUE
+  } else{
+    FALSE}
+}
+
+logical_list = lapply(sample_vec, IsEven) ##only works with lists and vectors, produces list
+logical_list #created a logical list (true, evens) corresponding to state shuffle
+
+#we can make it into a vector or flatten it with unlist()
+logical_vec = unlist(logical_list)
+logical_vec
+
+#we want even ids so we can get the names of the states
+even_ids = sample_vec[logical_vec] #takes list of 50 random numbers 1-50, and only takes true values (evens)
+even_ids 
+
+state.name[even_ids] #produce state names according to randomized number list (evens only)
+
+
+
+#lets create a function that returns TRUE if value is ODD
+IsOdd = function(n){
+  if(n %% 2 != 0){
+    TRUE
+  } else{
+    FALSE}
+}
+
+logical_list2 = lapply(sample_vec, IsOdd)
+logical_list2 #created a logical list (true, evens) corresponding to state shuffle
+
+#we can make it into a vector or flatten it with unlist()
+logical_vec2 = unlist(logical_list2)
+logical_vec2
+
+#we want even ids so we can get the names of the states
+odd_ids = sample_vec[logical_vec2] #takes list of 50 random numbers 1-50, and only takes true values (evens)
+odd_ids 
+
+state.name[odd_ids] #produce state names according to randomized number list (evens only)
+
+
+
+# SAPPLY 
+logical_vec = sapply(sample_vec, IsEven) ##outputs as a vector, can handle dataframes, lists, and vectors
+logical_vec
+
+state_data = state.x77 
+state_df =  as.data.frame(state_data) #converts state_data (a matrix) to a dataframe
+class(state_data) #this is a matrix
+class(state_df) #this is a dataframe
+
+rownames(state_df) #gets row names
+
+state_df$State = rownames(state_df) #Row names are states, should now be in a new row title column
+View(state_df)
+
+rownames(state_df) = NULL #to revmove row names we just created
+View(state_df)
+
+variable_class = sapply(state_df, class) #produces vector of the class of each variable
+variable_class
+
+variable_type = sapply(state_df, typeof) #prdouces vector of type of each variable
+variable_type
+
+## Libraries and Packages
+
+library(tidyverse) #import a library
+library(help = "tidyverse") # help with the specific library
+
+# sometimes you may see required instead of a library but it also loads it
+require(tidyverse) #samesies 
+
+install.packages("nycflights13") #install package
+library(nycflights13) #load corresponding library (libraries are bigger than packages)
+
+## 
+
+getwd() ##double check current working directory (should be desktop, afwerx, data)
+load("tidyr_tables.RData") #load the tables we want from the directory
+
+# load nyc flight dataset
+flights = nycflights13::flights #take table named flights from the nycflights13 library, assign it to variable named flights
+View(flights)
+
+#load data into environment 
+data(flights)
+filtered_flights = filter(flights, month == 1, year == 2013) #filter flights according to month and year
+
+
+#month 1 and day 25, and dep time 15
+filter(flights, month == 1 & day == 25 & dep_time==15)
+
+#month 1, 3, and 8, and day 25
+filter(flights, month %in% c(1, 3, 8) & day == 25)
+
+#filter with NA
+NA_df = data.frame(x = c(1, NA, 2), y = c(1,2,3)) #create NA_df dataframe (1 NA 2; 1 2 3)
+
+filter(NA_df, x>=1) #filter NA_df and return everything that meets criteria (x>=1)
+
+filter(NA_df, is.na(x) | x>=1) #filter NA_df, return x>=1 OR NAs --- you KEEP what meets criteria 
+
