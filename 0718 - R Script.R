@@ -1,0 +1,167 @@
+
+## Ensure we are in the correct directory to load files, then load files
+main_dir = "~/Desktop/af-werx"
+data_dir = paste0(main_dir, "/data")
+data_dir
+
+setwd(data_dir)
+getwd() #double check
+
+load("tidyr_tables.RData") #load data
+flights =  nycflights13::flights #assign data to variable
+
+
+## Manipulate Flights Data
+arrange(flights,year,month,day) #arrange data (flights) by year, then month, then day (all start at 1)
+
+arrange(flights,year, desc(month), day) #starts the months at 12 and counts down to 1 
+
+NA_df = data.frame(x=c(1,NA,2), y=c(1,2,3)) #sample matrix
+arrange(NA_df, desc(x)) #NAs go to bottom-- NA_df data is being organized according to x, in descending order
+
+#select only year month and day
+select(flights, year, month, day)
+
+#can also use the range operator 
+select(flights, year:day)
+
+#to exclude
+select(flights, -(year:day))
+
+#helper functions-- suppose we want the columns that end with delay
+select(flights, ends_with("delay"))
+
+
+## Create a subset of the dataset
+flights_sml = select(flights, year:day, ends_with("delay"), distance, air_time)
+flights_sml
+
+# Mutate -- lets add two columns called gain and speed
+mutate(flights_sml, gain=arr_delay-dep_delay, speed=(distance/air_time)*60)
+
+# Transmute -- if we only want the new columns we can use transmute
+transmute(flights_sml, gain=arr_delay-dep_delay, speed=(distance/air_time)*60)
+
+transmute(flights_sml, arr_delay, lag(arr_delay)) #shifts values down by one row
+transmute(flights_sml, arr_delay, lead(arr_delay)) #shifts values up by one row
+transmute(flights_sml, arr_delay, cumsum(arr_delay)) #cumulatively sums all values
+
+# Ranking -- 
+x <- c(5, 1, 3, 2, 2, NA)
+row_number(x)
+min_rank(x)
+dense_rank(x)
+percent_rank(x)
+cume_dist(x)
+
+# Summarise -- 
+summarise(flights, delay=mean(dep_delay, na.rm=T))
+
+
+# Group By
+by_day = group_by(flights, year, month, day)
+by_day
+
+# Use Summarise and Group By Together
+summarise(by_day, delay=mean(dep_delay, na.rm=T))
+
+# Group Flights by Destination
+by_dest = group_by(flights, dest)
+
+delay = summarise(by_dest, count=n(), 
+                            dist=mean(distance, na.rm=T),
+                            delay=mean(arr_delay, na.rm=T))
+                  
+delay = filter(delay, count>20, dest!= "HNL")
+
+delay
+
+
+# Do the same as Summarise and Group By, but with Pipes
+delays = flights %>% group_by(dest) %>% 
+  summarise(count=n(), dist=mean(distance, na.rm=T), delay=mean(arr_delay, na.rm=T))
+delays
+
+# Use another example
+flights %>% group_by(year, month, day) %>% 
+  summarise(mean=mean(dep_delay, na.rm=T))
+
+delays = flights %>% group_by(dest) %>% 
+  summarise(count = n_distinct(distance), 
+            dist=mean(distance, na.rm = T), 
+            delay = mean(arr_delay, na.rm=T))
+delays
+
+# Use n() to count 
+flights %>% group_by(year, month, day) %>% 
+  summarise(mean=mean(dep_delay, na.rm =T), n = n())
+
+flights %>% count(day)
+
+#summarise with ranking
+flights %>% group_by(year, month) %>% 
+  summarise(first=min(dep_time, na.rm=T), last=max(dep_time, na.rm=T))
+
+#just a demo
+min(flights$dep_time, na.rm=T))
+max(flights$dep_time, na.rm=T))
+
+
+# Summarise Position
+# not canceled flights
+
+not_cancelled = flights %>% filter(!is.na(dep_time)) #remvoe canceled flights, where dep time is NA
+
+not_cancelled %>% group_by(year, month, day) %>% summarise(first=min(dep_time), 
+                                                           last = max(dep_time))
+
+not_cancelled %>% group_by(year, month, day) %>% summarise (flights_that_take_off = n_distinct(dep_time)) #not best use of n distinct, but it works
+
+# Ungrouping 
+notcancelled %>% 
+  ungroup() %>%   #more like regrouping, as opposed to ungrouping 
+  group_by(year, month) %>% 
+  summarise(flights_by_year = n_distinct(dep_time))
+
+
+# Data Wrangling, Intro
+
+#gather function, address deficiencies by name
+year_country
+year_country %>% 
+  gather('1999','2000', key="year",value="cases")
+
+# by range
+year_country %>% 
+  gather(2:3, key="year",value="cases")
+
+
+# Spread -- when something is account for in the rows that should be its own variable (column)
+key_value_country 
+
+key_value_country %>% spread(key=key, value=value) #address by pipline and spread()
+
+spread(key_value_country, key=key, value=value) #address with just spread()
+
+# if we want to separate values
+# 745/19987071 ---> 745 and 19987071
+# we can use separate
+
+rate_country
+
+rate_country %>% 
+  separate(rate, into=c("cases","population", sep="/"))
+
+## Another example
+
+ex_table = rate_country %>% 
+  separate(year, into=c("century","year"), sep=2, convert=T) #sep=2 means separate after the second character
+#convert changes the value into what R thinks is the best format (character to integer)
+
+# Unite Function
+ex_table %>% 
+  unite(time, century, year, sep="") #separator is nothing (should unite clean), otherwise underscore is default
+
+
+
+

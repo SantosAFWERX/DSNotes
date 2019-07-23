@@ -1,0 +1,155 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#Basic Visualizations
+ 
+
+```{r}
+plot(c(1,4,6,7,8,11,44,66))
+```
+
+# Alright boom, so import some data and graph it
+
+```{r}
+## Set your directory
+main_dir = "~/Desktop/af-werx"
+data_dir = paste0(main_dir, "/data")
+data_dir
+setwd(data_dir)
+getwd()
+
+## Import the good stuff
+CMP = read.csv("ChemicalManufacturingProcess.csv", header=T, stringsAsFactors=F)
+
+# View Data
+View(CMP)
+
+# Lets take a smaller sample of the data, by defining a vector with the columns that we want
+column_ids = c(1:4, 14:16)
+column_ids
+
+#  And now we take all the columns defined by that vector
+CMP_subset = CMP[,column_ids]
+
+# Lets see what hte subset looks like
+str(CMP_subset)
+summary(CMP_subset$Yield)
+
+#First visualization
+boxplot(CMP_subset$Yield)
+boxplot(CMP_subset$Yield, col="orange", main= "Yield Summary Yo")
+
+```
+
+```{r}
+# lets get another random sample
+set.seed(2) 
+n_cols = ncol(CMP_subset) #Set variable N_cols to the number of columbs in the CMP subset 
+col_sample = sample(colors(), n_cols) #now col_sample is set to a sample of colors the size of n_cols
+col_sample
+
+boxplot(CMP_subset, col = col_sample) #lemme see it 
+```
+
+```{r}
+hist(CMP_subset$Yield, col=col_sample[1:8], xlab= "Yield", main= "Dist. of Yield")
+```
+```{r}
+par(mfrow = c(1,2)) ## This puts the following graphs together, but doesn't do well in R Notebook, better in R Script or HTML
+hist(CMP_subset$BiologicalMaterial01, col= col_sample[2], xlab = "Bio Material 1", main = "Dist. of Bio Material 1")
+hist(CMP_subset$BiologicalMaterial02, col= col_sample[3], xlab = "Bio Material 2", main = "Dist. of Bio Material 2")
+
+```
+
+## Bivariate Plots
+```{r}
+plot(CMP_subset[,2], CMP_subset[,1], xlab = "Bio Material", ylab = "Yield", main = "Bio. Material 1 vs Yield", pch=16, cex=.25, col = "steelblue") #0 to 25 and then some special character, hit ?pch for more ;;;  cex??
+
+```
+
+```{r}
+
+pairs(CMP_subset[,1:4],pch=19,col="steelblue")
+print("hello")
+```
+```{r}
+install.packages("corrplot")
+
+library(corrplot)
+library(help = "corrplot")
+
+CMP_cor = cor(CMP_subset[,1:4]) #only taking yield, Bio Mat 1, Bio Mat 2, and Bio Mat 3
+View(CMP_cor)
+
+corrplot(CMP_cor) #default is color gradient
+
+```
+
+
+# Options in Cor Plot
+
+```{r}
+corrplot(CMP_cor, method="number") #numbers
+
+corrplot(CMP_cor, method = "pie") #pie charts
+
+corrplot.mixed(CMP_cor) #number and colors, also try ellipse, square, color, shade 
+```
+
+## GG Plot 2
+```{r}
+
+install.packages("ggplot2")
+
+library(ggplot2)
+
+?ggplot2
+
+# specify data, specify visuals, apply shapes
+ggp1 = ggplot(CMP_subset, aes(x=Yield)) #sets field
+ggp1
+
+ggp1 = ggp1 + geom_histogram(aes(y= ..density..), binwidth=0.75, color = "steelblue", fill="gray")
+ggp1 #adds data with bars
+
+ggp1 = ggp1 + geom_density(alpha = 0.5, color="gray", fill="steelblue") #alpha is opacity, higher = darker
+ggp1 #adds wavy overlay
+
+ggp1 = ggp1 + labs(title="Distribution", subtitle="Histogram & Density")
+ggp1 #adds titles (labs)
+
+ggp1 = ggp1 + ggtheme1 #adds theme, defined later 
+ggp1
+
+```
+
+## Second Example 
+```{r}
+ggp2 = ggplot(CMP_subset,
+              aes(x=BiologicalMaterial01, 
+                  y=Yield))
+ggp2 #creates field
+
+ggp2 = ggp2 + geom_point()
+ggp2 #lays scatter plot down
+
+ggp2 = ggp2 + geom_point(color="darkorange")+
+  geom_smooth(method=lm)+
+  labs(title= "Bio. Material 1 vs Yield", 
+       subtitle = "Scatterplot with linear fit")
+ggp2 #changes scatter plot and adds line of best fit 
+
+ggtheme1 = # define the theme
+  theme_bw()+
+  theme(axis.title = element_text(size=20), 
+        axis.text = element_text(size=16),
+        plot.title = element_text(size=25),
+        plot.subtitle = element_text(size=18))
+
+ggp2 = ggp2 + ggtheme1 #add theme to scatter
+ggp2
+```
+
+## 
